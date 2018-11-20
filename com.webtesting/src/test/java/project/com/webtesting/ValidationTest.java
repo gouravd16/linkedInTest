@@ -87,6 +87,7 @@ public class ValidationTest extends base {
 		int count = hp.getSearchResultName().size();		
 		Assert.assertEquals(count, 10);
 	
+	
 	}
 	
 	
