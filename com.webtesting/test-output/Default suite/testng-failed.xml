@@ -6,6 +6,7 @@
       <class name="project.com.webtesting.ValidationTest">
         <methods>
           <include name="tearDown"/>
+          <include name="validateConnection"/>
           <include name="setUP"/>
           <include name="validateNoteSend"/>
           <include name="setURL"/>

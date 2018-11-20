@@ -4,18 +4,18 @@ import java.io.IOException;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import junit.framework.Assert;
 import pageobjects.Homepage;
 import pageobjects.Loginpage;
 import resources.base;
@@ -55,41 +55,65 @@ public class ValidationTest extends base {
 		Actions a = new Actions(driver);
 		a.moveToElement(hp.getSearchBar()).click().build().perform();
 		a.moveToElement(hp.getSearchBar()).sendKeys("Amit Tiwari").build().perform();
-		a.moveToElement(hp.getSearchIcon()).click().build().perform();
+		a.moveToElement(hp.getSearchBar()).sendKeys(Keys.ENTER).build().perform();
+		//a.moveToElement(hp.getSearchIcon()).click().build().perform();
 		
 		WebDriverWait d = new WebDriverWait(driver, 40);
 		d.until(ExpectedConditions.visibilityOf(hp.getSearchResultList()));
-		System.out.println(driver.getTitle());
 		Assert.assertTrue(driver.getTitle().contains("Amit Tiwari"));
 				
 	}
 	
 	
 	@Test(priority=2)
-	public void addConnection() {
+	public void validateListCount() {
+	
+		Homepage hp= new Homepage(driver);
 		
-		Homepage hp = new Homepage(driver);
-		WebElement element = hp.getSearchResultList();
-		
-		int count = element.findElements(By.tagName("button")).size();
-		System.out.println(count);
+		//Scrolling down the page to let Ajax call load all the element in the current list
+		JavascriptExecutor scrollDown = (JavascriptExecutor) driver;
+		scrollDown.executeScript("window.scrollBy(0,document.body.scrollHeight)", "");
 		
 		
-		for (int i = 0; i<count; i++) {
-			String link =  element.findElements(By.tagName("button")).get(i).getAttribute("aria-label");
-			System.out.println(link);
-			if(link.contains("Connect")) {
-				
-				WebElement newElement = element.findElements(By.tagName("button")).get(0);
-				JavascriptExecutor js = (JavascriptExecutor) driver;
-				js.executeScript("arguments[0].click();", newElement);
-				
-			}	
-		}
+		//hp.getAllyJumpButton().click();
+		
+		//Wait until all the elements in the list has been shown by waiting
+		//for until the next button at the bottom of the page  becomes clickable
+		WebDriverWait d = new WebDriverWait(driver, 40);
+		d.until(ExpectedConditions.elementToBeClickable(hp.getNextButton()));
+
+		
+		//Asserting the number of name blocks in the list 
+		int count = hp.getSearchResultName().size();		
+		Assert.assertEquals(count, 10);
+	
 	}
 	
 	
 	@Test(priority=3)
+	public void validateConnection() throws InterruptedException {
+		
+		Homepage hp= new Homepage(driver);
+		int count = hp.getSearchResultName().size();
+
+		for (int i = 0; i<count; i++) {
+			
+			String result = hp.getSearchResultName().get(i).getText();
+			
+			//For clicking on connect button only
+			if(result.contains("Connect")) {
+				WebElement newElement = driver.findElements(By.tagName("button")).get(0);
+				JavascriptExecutor js = (JavascriptExecutor) driver;
+				js.executeScript("arguments[0].click();", newElement);
+				
+			}
+		}
+		// validate the connect button is working properly by validating add note button is showing.
+		Assert.assertTrue(hp.getAddNoteButton().isDisplayed());
+	}
+	
+	
+	@Test(priority=4)
 	public void validateNoteSend() {
 		Homepage hp = new Homepage(driver);
 		hp.getAddNoteButton().click();
@@ -100,6 +124,7 @@ public class ValidationTest extends base {
 				
 	}
 	
+	
 	@DataProvider
 	public Object[][] getLoginCredentials(){
 		
@@ -107,15 +132,17 @@ public class ValidationTest extends base {
 		
 		data[0][0] = prop.getProperty("Username");
 		data[0][1] = prop.getProperty("Password");
-		
+	
 		return data;
 	}
 	
 	
 	
+	
+	
 	@AfterTest
 	public void tearDown() {
-		//driver.close();
+		driver.close();
 		
 	}
 

@@ -36,7 +36,7 @@ public class base {
 			driver = new FirefoxDriver();
 		}
 		
-		driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
+		driver.manage().timeouts().implicitlyWait(40, TimeUnit.SECONDS);
 		
 		
 		return driver;
